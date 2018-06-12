@@ -460,4 +460,20 @@ void CObjectsShader::WallCollision()
 		}
 	}
 
+	for (int i = 0; i < max_enemy; ++i)
+	{
+		if (enemy[i]->Active == false) continue;
+
+		ContainmentType containType = wall->m_xmOOBB.Contains(enemy[i]->m_xmOOBB);
+		switch (containType)
+		{
+		case DISJOINT:
+			XMVECTOR xmvNormal = XMVectorSet(enemy[i]->GetPosition().x, enemy[i]->GetPosition().y, enemy[i]->GetPosition().x, 0.0f);
+			XMVECTOR xmvReflect = XMVector3Reflect(XMLoadFloat3(&enemy[i]->m_xmf3MovingDirection), xmvNormal);
+			XMStoreFloat3(&enemy[i]->m_xmf3MovingDirection, xmvReflect);
+			break;
+		}
+	}
+
+
 }

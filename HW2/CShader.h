@@ -83,7 +83,8 @@ public:
 		*pd3dGraphicsRootSignature);
 	virtual void ReleaseUploadBuffers();
 	virtual void Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera);
-protected:
+
+public:
 	CGameObject **my_bullet = NULL;
 	int max_bullet = 20;
 	int bullet_cnt = 0;
@@ -98,6 +99,7 @@ protected:
 	int							m_timestack;
 
 	CPlayer * pPlayer = NULL;
+
 public:
 	void CreateBullet();
 	void CreateEnemy();
