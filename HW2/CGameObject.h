@@ -18,6 +18,24 @@ protected:
 	CShader *m_pShader = NULL;
 
 public:
+	bool Active = true;
+
+	XMFLOAT3					m_xmf3MovingDirection;
+	float						m_fMovingSpeed = 0;
+	float						m_fMovingRange;
+
+	XMFLOAT3					m_xmf3RotationAxis;
+	float						m_fRotationSpeed;
+
+	float						m_time = 0;
+	bool						m_chase = false;
+
+	int							m_maxhit;
+	bool						m_boss;
+
+	BoundingOrientedBox			m_xmOOBB;
+
+public:
 	void AddRef() { m_nReferences++; }
 	void Release() { if (--m_nReferences <= 0) delete this; }
 	
@@ -27,8 +45,9 @@ public:
 	virtual void Animate(float fTimeElapsed);
 	virtual void OnPrepareRender();
 	virtual void Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera);
+	
 	void Rotate(XMFLOAT3 *pxmf3Axis, float fAngle);
-
+	
 	//상수 버퍼를 생성한다. 
 	virtual void CreateShaderVariables(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList
 	*pd3dCommandList);
@@ -49,23 +68,15 @@ public:
 	void MoveUp(float fDistance = 1.0f);
 	void MoveForward(float fDistance = 1.0f);
 	
-	//게임 객체를 회전(x-축, y-축, z-축)한다. 
-	void Rotate(float fPitch = 10.0f, float fYaw = 10.0f, float fRoll = 10.0f);
+	void Move(XMFLOAT3& vDirection, float fSpeed);
+	
+	void SetMovingDirection(const XMFLOAT3& xmf3MovingDirection) { m_xmf3MovingDirection = Vector3::Normalize(xmf3MovingDirection); }
+	void SetMovingSpeed(float fSpeed) { m_fMovingSpeed = fSpeed; }
+	void SetMovingRange(float fRange) { m_fMovingRange = fRange; }
+
+
+	void SetRotationAxis(const XMFLOAT3& xmf3RotationAxis) { m_xmf3RotationAxis = Vector3::Normalize(xmf3RotationAxis); }
+	void SetRotationSpeed(float fSpeed) { m_fRotationSpeed = fSpeed; }
+
 };
 
-class CRotatingObject : public CGameObject
-{
-public:
-	CRotatingObject();
-	virtual ~CRotatingObject();
-private:
-	XMFLOAT3 m_xmf3RotationAxis;
-	float m_fRotationSpeed;
-public:
-	void SetRotationSpeed(float fRotationSpeed) { m_fRotationSpeed = fRotationSpeed; }
-	void SetRotationAxis(XMFLOAT3 xmf3RotationAxis) {
-		m_xmf3RotationAxis =
-			xmf3RotationAxis;
-	}
-	virtual void Animate(float fTimeElapsed);
-};

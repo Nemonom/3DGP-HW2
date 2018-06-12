@@ -141,6 +141,28 @@ void CCamera::SetViewportsAndScissorRects(ID3D12GraphicsCommandList *pd3dCommand
 	pd3dCommandList->RSSetScissorRects(1, &m_d3dScissorRect);
 }
 
+void CCamera::Rotate(float fPitch, float fYaw, float fRoll)
+{
+	if (fPitch != 0.0f)
+	{
+		XMMATRIX mtxRotate = XMMatrixRotationAxis(XMLoadFloat3(&m_xmf3Right), XMConvertToRadians(fPitch));
+		m_xmf3Look = Vector3::TransformNormal(m_xmf3Look, mtxRotate);
+		m_xmf3Up = Vector3::TransformNormal(m_xmf3Up, mtxRotate);
+	}
+	if (fYaw != 0.0f)
+	{
+		XMMATRIX mtxRotate = XMMatrixRotationAxis(XMLoadFloat3(&m_xmf3Up), XMConvertToRadians(fYaw));
+		m_xmf3Look = Vector3::TransformNormal(m_xmf3Look, mtxRotate);
+		m_xmf3Right = Vector3::TransformNormal(m_xmf3Right, mtxRotate);
+	}
+	if (fRoll != 0.0f)
+	{
+		XMMATRIX mtxRotate = XMMatrixRotationAxis(XMLoadFloat3(&m_xmf3Look), XMConvertToRadians(fRoll));
+		m_xmf3Up = Vector3::TransformNormal(m_xmf3Up, mtxRotate);
+		m_xmf3Right = Vector3::TransformNormal(m_xmf3Right, mtxRotate);
+	}
+}
+
 CSpaceShipCamera::CSpaceShipCamera(CCamera *pCamera) : CCamera(pCamera)
 {
 	m_nMode = SPACESHIP_CAMERA;

@@ -5,6 +5,8 @@
 #include "CShader.h"
 #include "CCamera.h"
 
+class CPlayer;
+
 class CScene
 {
 public:   
@@ -34,5 +36,16 @@ protected:
 
 	ID3D12RootSignature *m_pd3dGraphicsRootSignature; 
 	//루트 시그너쳐를 나타내는 인터페이스 포인터이다. 
+
+public:
+	CPlayer *m_pPlayer = NULL;
+
+public:
+	void Put_Player(CPlayer *p)
+	{
+		m_pShaders[0].pPlayer = m_pPlayer = p;
+	}
+	void CreateBullet();
+	void CreateEnemy();
 };
 

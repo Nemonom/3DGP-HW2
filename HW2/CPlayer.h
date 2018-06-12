@@ -15,7 +15,7 @@
 
 class CPlayer : public CGameObject
 {
-protected:
+public:
 	//플레이어의 위치 벡터, x-축(Right), y-축(Up), z-축(Look) 벡터이다. 
 	XMFLOAT3 m_xmf3Position;
 	XMFLOAT3 m_xmf3Right;

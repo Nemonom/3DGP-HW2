@@ -1,5 +1,5 @@
 #include "CShader.h"
-
+#include "CPlayer.h"
 
 CShader::~CShader()
 {
@@ -16,10 +16,10 @@ D3D12_RASTERIZER_DESC CShader::CreateRasterizerState()
 	D3D12_RASTERIZER_DESC d3dRasterizerDesc;
 	::ZeroMemory(&d3dRasterizerDesc, sizeof(D3D12_RASTERIZER_DESC));
 
-	d3dRasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
-	//d3dRasterizerDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	//d3dRasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+	d3dRasterizerDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
 	
-	d3dRasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
+	d3dRasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
 	//d3dRasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
 	//d3dRasterizerDesc.CullMode = D3D12_CULL_MODE_FRONT;
 
@@ -257,76 +257,207 @@ void CObjectsShader::CreateShader(ID3D12Device *pd3dDevice, ID3D12RootSignature
 void CObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList
 	*pd3dCommandList)
 {
-	//가로x세로x높이가 12x12x12인 정육면체 메쉬를 생성한다. 
+	CCubeMeshDiffused *pWallMesh = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList,
+		100, 100, 1000, 0);
+	pWallMesh->SetOOBB(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(100, 100, 500), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+	
+	wall = new CGameObject();
+	wall->m_xmOOBB = pWallMesh->m_xmOOBB;
+	wall->SetMesh(pWallMesh);
+	wall->SetPosition(0,0,400);
+
+	wall->Active = true;
+
+
 	CCubeMeshDiffused *pCubeMesh = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList,
-	12.0f, 12.0f, 12.0f);
-	
-	/*x-축, y-축, z-축 양의 방향의 객체 개수이다. 각 값을 1씩 늘리거나 줄이면서 실행할 때 프레임 레이트가 어떻게
-	변하는 가를 살펴보기 바란다.*/
-	int xObjects = 10, yObjects = 10, zObjects = 10, i = 0;
-	
-	//x-축, y-축, z-축으로 21개씩 총 21 x 21 x 21 = 9261개의 정육면체를 생성하고 배치한다. 
-	m_nObjects = (xObjects * 2 + 1) * (yObjects * 2 + 1) * (zObjects * 2 + 1);
-	m_ppObjects = new CGameObject*[m_nObjects];
-	float fxPitch = 12.0f * 2.5f;
-	float fyPitch = 12.0f * 2.5f;
-	float fzPitch = 12.0f * 2.5f;
-	CRotatingObject *pRotatingObject = NULL;
-	for (int x = -xObjects; x <= xObjects; x++)
+		MY_BULLET_SIZE, MY_BULLET_SIZE, MY_BULLET_SIZE, 0);
+	pCubeMesh->SetOOBB(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(MY_BULLET_SIZE * 0.5f, MY_BULLET_SIZE * 0.5f, MY_BULLET_SIZE * 0.5f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+
+	my_bullet = new CGameObject*[max_bullet];
+
+	CGameObject *pRotatingObject = NULL;
+
+	for (int z = 0; z < max_bullet; z++)
 	{
-		for (int y = -yObjects; y <= yObjects; y++)
-		{
-			for (int z = -zObjects; z <= zObjects; z++)
-			{
-				pRotatingObject = new CRotatingObject();
-				pRotatingObject->SetMesh(pCubeMesh);
-				//각 정육면체 객체의 위치를 설정한다.
-				pRotatingObject->SetPosition(fxPitch*x, fyPitch*y, fzPitch*z);
-				pRotatingObject->SetRotationAxis(XMFLOAT3(0.0f, 1.0f, 0.0f));
-				pRotatingObject->SetRotationSpeed(10.0f*(i % 10) + 3.0f);
-				m_ppObjects[i++] = pRotatingObject;
-			}
-		}
+		pRotatingObject = new CGameObject();
+		pRotatingObject->SetMesh(pCubeMesh);
+		//각 정육면체 객체의 위치를 설정한다.
+		pRotatingObject->Active = false;
+		my_bullet[z] = pRotatingObject;
 	}
+		
+
+	CCubeMeshDiffused *pCubeMesh0 = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList,
+		MY_BULLET_SIZE * 2, MY_BULLET_SIZE * 2, MY_BULLET_SIZE * 2, 1);
+	pCubeMesh->SetOOBB(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(MY_BULLET_SIZE, MY_BULLET_SIZE, MY_BULLET_SIZE), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+	CCubeMeshDiffused *pCubeMesh1 = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList,
+		MY_BULLET_SIZE * 2, MY_BULLET_SIZE * 2, MY_BULLET_SIZE * 2, 2);
+	pCubeMesh->SetOOBB(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(MY_BULLET_SIZE, MY_BULLET_SIZE, MY_BULLET_SIZE), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+	CCubeMeshDiffused *pCubeMesh2 = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList,
+		MY_BULLET_SIZE * 2, MY_BULLET_SIZE * 2, MY_BULLET_SIZE * 2, 3);
+	pCubeMesh->SetOOBB(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(MY_BULLET_SIZE, MY_BULLET_SIZE, MY_BULLET_SIZE), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+
+
+	enemy = new CGameObject*[max_enemy];
+
+	CGameObject *pEnemyObject = NULL;
+
+	for (int z = 0; z < max_enemy; z++)
+	{
+		pEnemyObject = new CGameObject();
+		if(z % 3 == 0)
+			pEnemyObject->SetMesh(pCubeMesh0);	
+		else if (z % 3 == 1)
+			pEnemyObject->SetMesh(pCubeMesh1);
+		else if (z % 3 == 2)
+			pEnemyObject->SetMesh(pCubeMesh2); 
+		pEnemyObject->Active = false;
+		enemy[z] = pEnemyObject;
+	}
+
+
 	CreateShaderVariables(pd3dDevice, pd3dCommandList);
 }
 
+
 void CObjectsShader::ReleaseObjects()
 {
-	if (m_ppObjects)
+	if (my_bullet)
 	{
-		for (int j = 0; j < m_nObjects; j++)
+		for (int j = 0; j < max_bullet; j++)
 		{
-			if (m_ppObjects[j]) delete m_ppObjects[j];
+			if (my_bullet[j]) delete my_bullet[j];
 		}
-		delete[] m_ppObjects;
+		delete[] my_bullet;
 	}
+	if (enemy)
+	{
+		for (int j = 0; j < max_enemy; j++)
+		{
+			if (enemy[j]) delete enemy[j];
+		}
+		delete[] enemy;
+	}
+
+	if (wall)
+		delete wall;
 }
 
 void CObjectsShader::AnimateObjects(float fTimeElapsed)
-{
-	for (int j = 0; j < m_nObjects; j++)
+{	
+	for (int j = 0; j < max_bullet; j++)
 	{
-		m_ppObjects[j]->Animate(fTimeElapsed);
+		my_bullet[j]->Animate(fTimeElapsed);
 	}
+	for (int j = 0; j < max_enemy; j++)
+	{
+		if (enemy[j]->m_chase) enemy[j]->SetMovingDirection(Vector3::Normalize(Vector3::Subtract(pPlayer->GetPosition(), enemy[j]->GetPosition())));
+		enemy[j]->Animate(fTimeElapsed);
+	}
+	
+	WallCollision();
 }
 
 void CObjectsShader::ReleaseUploadBuffers()
 {
-	if (m_ppObjects)
+	if (my_bullet)
 	{
-		for (int j = 0; j < m_nObjects; j++) m_ppObjects[j]->ReleaseUploadBuffers();
+		for (int j = 0; j < max_bullet; j++) my_bullet[j]->ReleaseUploadBuffers();
 	}
+	if (enemy)
+	{
+		for (int j = 0; j < max_enemy; j++) enemy[j]->ReleaseUploadBuffers();
+	}
+	if (wall) wall->ReleaseUploadBuffers();
 }
 
 void CObjectsShader::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera)
 {
 	CShader::Render(pd3dCommandList, pCamera);
-	for (int j = 0; j < m_nObjects; j++)
+	for (int j = 0; j < max_bullet; j++)
 	{
-		if (m_ppObjects[j])
+		if (my_bullet[j])
 		{
-			m_ppObjects[j]->Render(pd3dCommandList, pCamera);
+			my_bullet[j]->Render(pd3dCommandList, pCamera);
 		}
 	}
+	for (int j = 0; j < max_enemy; j++)
+	{
+		if (enemy[j])
+		{
+			enemy[j]->Render(pd3dCommandList, pCamera);
+		}
+	}
+
+	if (wall) wall->Render(pd3dCommandList, pCamera);
+}
+
+void CObjectsShader::CreateBullet()
+{	
+	//각 정육면체 객체의 위치를 설정한다.
+	my_bullet[bullet_cnt]->SetPosition(pPlayer->GetPosition());
+	my_bullet[bullet_cnt]->SetRotationAxis(XMFLOAT3(0.0f, 1.0f, 0.0f));
+	my_bullet[bullet_cnt]->SetRotationSpeed(15.f + 3.0f);
+	my_bullet[bullet_cnt]->SetMovingDirection(pPlayer->GetLookVector());
+	my_bullet[bullet_cnt]->SetMovingSpeed(100);
+	my_bullet[bullet_cnt]->Active = true;
+
+	bullet_cnt++;
+
+	bullet_cnt = bullet_cnt % max_bullet;
+}
+
+void CObjectsShader::CreateEnemy()
+{
+	enemy[enemy_cnt]->SetPosition(rand() % 40 - 20, rand() % 40 - 20, pPlayer->GetPosition().z + Vector3::Normalize(pPlayer->GetLookVector()).z * 100 );
+	enemy[enemy_cnt]->SetRotationAxis(XMFLOAT3(rand() % 2, 1.0f, rand() % 2));
+	enemy[enemy_cnt]->SetRotationSpeed(rand() % 10 + 5.f);
+	enemy[enemy_cnt]->SetMovingDirection(XMFLOAT3(rand() % 2 - 1, rand() % 2 - 1, rand() % 2 - 1));
+	enemy[enemy_cnt]->SetMovingSpeed(rand() % 30 + 20.f);
+	enemy[enemy_cnt]->Active = true;
+
+	enemy_cnt++;
+
+	enemy_cnt = enemy_cnt % max_enemy;
+
+	enemy[enemy_cnt]->SetPosition(rand() % 40 - 20, rand() % 40 - 20, pPlayer->GetPosition().z + Vector3::Normalize(pPlayer->GetLookVector()).z * 100);
+	enemy[enemy_cnt]->SetRotationAxis(XMFLOAT3(rand() % 2, 1.0f, rand() % 2));
+	enemy[enemy_cnt]->SetRotationSpeed(rand() % 10 + 5.f);
+	enemy[enemy_cnt]->SetMovingDirection(XMFLOAT3(rand() % 2 - 1, rand() % 2 - 1, rand() % 2 - 1));
+	enemy[enemy_cnt]->SetMovingSpeed(rand() % 30 + 20.f);
+	enemy[enemy_cnt]->Active = true;
+
+	enemy_cnt++;
+
+	enemy_cnt = enemy_cnt % max_enemy;
+
+	enemy[enemy_cnt]->SetPosition(rand() % 40 - 20, rand() % 40 - 20, pPlayer->GetPosition().z + Vector3::Normalize(pPlayer->GetLookVector()).z * 100);
+	enemy[enemy_cnt]->SetRotationAxis(XMFLOAT3(rand() % 2, 1.0f, rand() % 2));
+	enemy[enemy_cnt]->SetRotationSpeed(rand() % 10 + 5.f);
+	enemy[enemy_cnt]->SetMovingDirection(XMFLOAT3(rand() % 2 - 1, rand() % 2 - 1, rand() % 2 - 1));
+	enemy[enemy_cnt]->SetMovingSpeed(rand() % 30 + 20.f);
+	enemy[enemy_cnt]->Active = true;
+
+	enemy_cnt++;
+
+	enemy_cnt = enemy_cnt % max_enemy;
+
+}
+
+
+void CObjectsShader::WallCollision()
+{
+	for (int i = 0; i < max_bullet; ++i)
+	{
+		if (my_bullet[i]->Active == false) continue;
+		
+		ContainmentType containType = wall->m_xmOOBB.Contains(my_bullet[i]->m_xmOOBB);
+		switch (containType)
+		{
+		case DISJOINT:
+			my_bullet[i]->Active = false;
+			break;
+		}
+	}
+
 }

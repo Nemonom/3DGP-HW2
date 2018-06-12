@@ -1,7 +1,10 @@
 #pragma once
 #include "stdafx.h"
+#include <list>
 #include "CGameObject.h"
 #include "CCamera.h"
+
+class CPlayer;
 
 struct CB_GAMEOBJECT_INFO
 {
@@ -81,6 +84,22 @@ public:
 	virtual void ReleaseUploadBuffers();
 	virtual void Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera);
 protected:
-	CGameObject * *m_ppObjects = NULL;
-	int m_nObjects = 0;
+	CGameObject **my_bullet = NULL;
+	int max_bullet = 20;
+	int bullet_cnt = 0;
+
+	CGameObject **enemy = NULL;
+	int max_enemy = 30;
+	int enemy_cnt = 0;
+
+	CGameObject *wall;
+
+	float						m_time;
+	int							m_timestack;
+
+	CPlayer * pPlayer = NULL;
+public:
+	void CreateBullet();
+	void CreateEnemy();
+	void WallCollision();
 };

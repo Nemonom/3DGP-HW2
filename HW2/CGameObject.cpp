@@ -15,6 +15,7 @@ CGameObject::~CGameObject()
 		m_pShader->Release();
 	}
 }
+
 void CGameObject::SetShader(CShader *pShader)
 {
 	if (m_pShader) m_pShader->Release();
@@ -35,8 +36,37 @@ void CGameObject::SetMesh(CMesh *pMesh)
 	if (m_pMesh) m_pMesh->AddRef();
 }
 
- void CGameObject::Animate(float fTimeElapsed)
+
+void CGameObject::Animate(float fElapsedTime)
 {
+	if (Active)
+	{
+		if (m_chase == false)
+		{
+			if (m_time < fElapsedTime * 6000)
+			{
+				m_time += fElapsedTime;
+			}
+			else
+			{
+				m_chase = true;
+			}
+		}
+
+		XMFLOAT3 xmf3Shift = XMFLOAT3(0, 0, 0);
+
+
+		if (m_fRotationSpeed != 0.0f) Rotate(&m_xmf3RotationAxis, m_fRotationSpeed * fElapsedTime);
+
+		if (m_fMovingSpeed != 0.0f) Move(m_xmf3MovingDirection, m_fMovingSpeed * fElapsedTime);
+
+		if (m_pMesh)
+		{
+			m_pMesh->m_xmOOBB.Transform(m_xmOOBB, XMLoadFloat4x4(&m_xmf4x4World));
+			XMStoreFloat4(&m_xmOOBB.Orientation, XMQuaternionNormalize(XMLoadFloat4(&m_xmOOBB.Orientation)));
+		}
+	}
+	
 }
 
 void CGameObject::OnPrepareRender()
@@ -50,10 +80,18 @@ void CGameObject::Rotate(XMFLOAT3 *pxmf3Axis, float fAngle)
 	m_xmf4x4World = Matrix4x4::Multiply(mtxRotate, m_xmf4x4World);
 }
 
+void CGameObject::Move(XMFLOAT3& vDirection, float fSpeed)
+{
+	XMFLOAT3 xmf3Position = GetPosition();
+	xmf3Position = Vector3::Add(xmf3Position, vDirection, fSpeed);
+	CGameObject::SetPosition(xmf3Position);
+}
+
 void CGameObject::CreateShaderVariables(ID3D12Device *pd3dDevice,
 	ID3D12GraphicsCommandList *pd3dCommandList)
 {
 }
+
 void CGameObject::ReleaseShaderVariables()
 {
 }
@@ -68,11 +106,14 @@ void CGameObject::UpdateShaderVariables(ID3D12GraphicsCommandList *pd3dCommandLi
 
 void CGameObject::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera)
 {
-	OnPrepareRender();
-	//객체의 정보를 셰이더 변수(상수 버퍼)로 복사한다.
-	UpdateShaderVariables(pd3dCommandList);
-	if (m_pShader) m_pShader->Render(pd3dCommandList, pCamera);
-	if (m_pMesh) m_pMesh->Render(pd3dCommandList);
+	if (Active)
+	{
+		OnPrepareRender();
+		//객체의 정보를 셰이더 변수(상수 버퍼)로 복사한다.
+		UpdateShaderVariables(pd3dCommandList);
+		if (m_pShader) m_pShader->Render(pd3dCommandList, pCamera);
+		if (m_pMesh) m_pMesh->Render(pd3dCommandList);
+	}
 }
 
 void CGameObject::SetPosition(float x, float y, float z)
@@ -81,14 +122,17 @@ void CGameObject::SetPosition(float x, float y, float z)
 	m_xmf4x4World._42 = y;
 	m_xmf4x4World._43 = z;
 }
+
 void CGameObject::SetPosition(XMFLOAT3 xmf3Position)
 {
 	SetPosition(xmf3Position.x, xmf3Position.y, xmf3Position.z);
 }
+
 XMFLOAT3 CGameObject::GetPosition()
 {
 	return(XMFLOAT3(m_xmf4x4World._41, m_xmf4x4World._42, m_xmf4x4World._43));
 }
+
 //게임 객체의 로컬 z-축 벡터를 반환한다.
 XMFLOAT3 CGameObject::GetLook()
 {
@@ -100,6 +144,7 @@ XMFLOAT3 CGameObject::GetLook()
 
 	return(Vector3::Normalize(put));
 }
+
 //게임 객체의 로컬 y-축 벡터를 반환한다. 
 XMFLOAT3 CGameObject::GetUp()
 {
@@ -111,6 +156,7 @@ XMFLOAT3 CGameObject::GetUp()
 
 	return(Vector3::Normalize(put));
 }
+
 //게임 객체의 로컬 x-축 벡터를 반환한다. 
 XMFLOAT3 CGameObject::GetRight()
 {
@@ -122,6 +168,7 @@ XMFLOAT3 CGameObject::GetRight()
 
 	return(Vector3::Normalize(put));
 }
+
 //게임 객체를 로컬 x-축 방향으로 이동한다. 
 void CGameObject::MoveStrafe(float fDistance)
 {
@@ -130,6 +177,7 @@ void CGameObject::MoveStrafe(float fDistance)
 	xmf3Position = Vector3::Add(xmf3Position, xmf3Right, fDistance);
 	CGameObject::SetPosition(xmf3Position);
 }
+
 //게임 객체를 로컬 y-축 방향으로 이동한다.
 void CGameObject::MoveUp(float fDistance)
 {
@@ -138,6 +186,7 @@ void CGameObject::MoveUp(float fDistance)
 	xmf3Position = Vector3::Add(xmf3Position, xmf3Up, fDistance);
 	CGameObject::SetPosition(xmf3Position);
 }
+
 //게임 객체를 로컬 z-축 방향으로 이동한다. 
 void CGameObject::MoveForward(float fDistance)
 {
@@ -146,26 +195,4 @@ void CGameObject::MoveForward(float fDistance)
 	xmf3Position = Vector3::Add(xmf3Position, xmf3Look, fDistance);
 	CGameObject::SetPosition(xmf3Position);
 }
-//게임 객체를 주어진 각도로 회전한다. 
-void CGameObject::Rotate(float fPitch, float fYaw, float fRoll)
-{
-	XMMATRIX mtxRotate = XMMatrixRotationRollPitchYaw(XMConvertToRadians(fPitch),
-		XMConvertToRadians(fYaw), XMConvertToRadians(fRoll));
-	m_xmf4x4World = Matrix4x4::Multiply(mtxRotate, m_xmf4x4World);
-}
 
-
-CRotatingObject::CRotatingObject()
-{
-	m_xmf3RotationAxis = XMFLOAT3(0.0f, 1.0f, 0.0f);
-	m_fRotationSpeed = 90.0f;
-}
-
-CRotatingObject::~CRotatingObject()
-{
-}
-
-void CRotatingObject::Animate(float fTimeElapsed)
-{
-	CGameObject::Rotate(&m_xmf3RotationAxis, m_fRotationSpeed * fTimeElapsed);
-}
