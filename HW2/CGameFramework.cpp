@@ -512,6 +512,9 @@ void CGameFramework::ProcessInput()
 void CGameFramework::AnimateObjects()
 {
 	if (m_pScene) m_pScene->AnimateObjects(m_GameTimer.GetTimeElapsed());
+
+	if (m_pPlayer->Active == false)
+		::PostQuitMessage(0);
 }
 
 void CGameFramework::WaitForGpuComplete()

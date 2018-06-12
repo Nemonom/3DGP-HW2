@@ -259,7 +259,7 @@ void CObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsComman
 {
 	CCubeMeshDiffused *pWallMesh = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList,
 		100, 100, 1000, 0);
-	pWallMesh->SetOOBB(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(100, 100, 500), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+	pWallMesh->SetOOBB(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(50, 50, 500), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
 	
 	wall = new CGameObject();
 	wall->m_xmOOBB = pWallMesh->m_xmOOBB;
@@ -345,6 +345,23 @@ void CObjectsShader::ReleaseObjects()
 
 void CObjectsShader::AnimateObjects(float fTimeElapsed)
 {	
+	m_time += fTimeElapsed;
+	if (m_time > fTimeElapsed * 120)
+	{
+		if (pPlayer->m_xmf3Position.z < 900)
+		{
+			CreateEnemy();
+	
+			if (m_timestack == 5)
+			{
+				CreateEnemy();
+				m_timestack = 0;
+			}
+		}
+		m_time = 0;
+		m_timestack++;
+	}
+	
 	for (int j = 0; j < max_bullet; j++)
 	{
 		my_bullet[j]->Animate(fTimeElapsed);
@@ -356,6 +373,7 @@ void CObjectsShader::AnimateObjects(float fTimeElapsed)
 	}
 	
 	WallCollision();
+	ObjectsCollision();
 }
 
 void CObjectsShader::ReleaseUploadBuffers()
@@ -468,12 +486,49 @@ void CObjectsShader::WallCollision()
 		switch (containType)
 		{
 		case DISJOINT:
-			XMVECTOR xmvNormal = XMVectorSet(enemy[i]->GetPosition().x, enemy[i]->GetPosition().y, enemy[i]->GetPosition().x, 0.0f);
-			XMVECTOR xmvReflect = XMVector3Reflect(XMLoadFloat3(&enemy[i]->m_xmf3MovingDirection), xmvNormal);
-			XMStoreFloat3(&enemy[i]->m_xmf3MovingDirection, xmvReflect);
+			//XMVECTOR xmvNormal = XMVectorSet(enemy[i]->GetPosition().x, enemy[i]->GetPosition().y, enemy[i]->GetPosition().x, 1.0f);
+			//XMVECTOR xmvReflect = XMVector3Reflect(XMLoadFloat3(&enemy[i]->m_xmf3MovingDirection), xmvNormal);
+			//XMStoreFloat3(&enemy[i]->m_xmf3MovingDirection, xmvReflect);
 			break;
 		}
 	}
 
+	auto p = Vector3::ScalarProduct(pPlayer->GetPosition(), 0.5f, 1);
+
+	if (wall->m_xmOOBB.Contains(XMLoadFloat3(&pPlayer->m_xmf3Position)) == DISJOINT)
+	{
+		//m_snd.Play_effect();
+		pPlayer->SetPosition(Vector3::Subtract(pPlayer->GetPosition(), p));
+	}
+
+}
+
+void CObjectsShader::ObjectsCollision()
+{
+	for (int i = 0; i < max_bullet; ++i)
+	{
+		if (my_bullet[i]->Active == false) continue;
+		
+		for (int j = 0; j < max_enemy; ++j)
+		{
+			if (enemy[j]->Active == false) continue;
+
+			if (my_bullet[i]->m_xmOOBB.Intersects(enemy[j]->m_xmOOBB))
+			{
+				my_bullet[i]->Active = false;
+				enemy[j]->Active = false;
+			}
+		}
+	}
+
+	
+	// 플ㄹ레이ㅓㅇ랑 충돌
+	//for (int i = 0; i < max_enemy; ++i)
+	//{
+	//	if (enemy[i]->Active == false) continue;
+	//
+	//	if (enemy[i]->m_xmOOBB.Intersects(pPlayer->m_xmOOBB))
+	//		pPlayer->Active = false;
+	//}
 
 }

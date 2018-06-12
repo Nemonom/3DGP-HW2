@@ -104,4 +104,5 @@ public:
 	void CreateBullet();
 	void CreateEnemy();
 	void WallCollision();
+	void ObjectsCollision();
 };
