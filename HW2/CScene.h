@@ -38,12 +38,9 @@ protected:
 	//루트 시그너쳐를 나타내는 인터페이스 포인터이다. 
 
 public:
-	CPlayer *m_pPlayer = NULL;
-
-public:
 	void Put_Player(CPlayer *p)
 	{
-		m_pShaders[0].pPlayer = m_pPlayer = p;
+		m_pShaders[0].pPlayer = p;
 	}
 	void CreateBullet();
 	void CreateEnemy();

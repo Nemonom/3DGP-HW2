@@ -316,13 +316,15 @@ void CObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsComman
 
 	/*CCubeMeshDiffused *pDummyMesh = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList,
 		MY_BULLET_SIZE , MY_BULLET_SIZE, MY_BULLET_SIZE * 4, 5);*/
-	pBossMesh->SetOOBB(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(MY_BULLET_SIZE, MY_BULLET_SIZE, MY_BULLET_SIZE), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+	pCubeMesh->SetOOBB(XMFLOAT3(0.0f, 0.0f, 0.0f)
+		, XMFLOAT3(MY_BULLET_SIZE, MY_BULLET_SIZE, MY_BULLET_SIZE)
+		, XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
 
 	playerdummy = new CGameObject();
 
 	pRotatingObject = NULL;
 	pRotatingObject = new CGameObject();
-	pRotatingObject->SetMesh(pBossMesh);
+	pRotatingObject->SetMesh(pCubeMesh);
 	pRotatingObject->Active = true;
 	pRotatingObject->SetPosition(0, 0, 0);
 	pRotatingObject->SetRotationSpeed(0);
@@ -579,7 +581,8 @@ void CObjectsShader::CreateEBullet()
 
 void CObjectsShader::CreateEnemy()
 {
-	enemy[enemy_cnt]->SetPosition(rand() % 40 - 20, rand() % 40 - 20, pPlayer->GetPosition().z + Vector3::Normalize(pPlayer->GetLookVector()).z * 100 );
+	enemy[enemy_cnt]->SetPosition(rand() % 40 - 20, rand() % 40 - 20
+		, pPlayer->GetPosition().z + Vector3::Normalize(pPlayer->GetLookVector()).z * 100 );
 	enemy[enemy_cnt]->SetRotationAxis(XMFLOAT3(rand() % 2, 1.0f, rand() % 2));
 	enemy[enemy_cnt]->SetRotationSpeed(rand() % 10 + 5.f);
 	enemy[enemy_cnt]->SetMovingDirection(XMFLOAT3(rand() % 2 - 1, rand() % 2 - 1, rand() % 2 - 1));
