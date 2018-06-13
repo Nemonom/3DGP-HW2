@@ -47,5 +47,8 @@ public:
 	}
 	void CreateBullet();
 	void CreateEnemy();
+	void Skill();
+
+	CGameObject *PickObjectPointedByCursor(int xClient, int yClient, CCamera *pCamera);
 };
 

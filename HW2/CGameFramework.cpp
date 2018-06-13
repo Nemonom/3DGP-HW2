@@ -328,6 +328,7 @@ void CGameFramework::BuildObjects()
 	CAirplanePlayer *pAirplanePlayer = new CAirplanePlayer(m_pd3dDevice,
 		m_pd3dCommandList, m_pScene->GetGraphicsRootSignature());
 	
+
 	m_pPlayer = pAirplanePlayer;
 	m_pCamera = m_pPlayer->GetCamera();
 
@@ -363,7 +364,8 @@ void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM
 		break;
 
 	case WM_RBUTTONDOWN:
-		
+		m_pSelectedObject = m_pScene->PickObjectPointedByCursor(LOWORD(lParam),
+			HIWORD(lParam), m_pCamera);
 		break;
 \
 
@@ -383,13 +385,18 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 		switch (wParam)
 		{
 		case VK_CONTROL:
+			if (m_pSelectedObject)
+			{
+				if(m_pSelectedObject->Active)
+					ProcessSelectedObject();
+			}
 			m_pScene->CreateBullet();
 			break;
 		case VK_ESCAPE:
 			::PostQuitMessage(0);
 			break;
-		case VK_RETURN:
-			m_pScene->CreateEnemy();
+		case 'z': case 'Z':
+			m_pScene->Skill();
 			break;
 		case VK_F8:
 			break;
@@ -494,16 +501,15 @@ void CGameFramework::ProcessInput()
 		SetCursorPos(m_ptOldCursorPos.x, m_ptOldCursorPos.y);
 	}
 	if ((dwDirection != 0) || (cxDelta != 0.0f) || (cyDelta != 0.0f))
-	{
+	{		
 		if (cxDelta || cyDelta)
-		{
-			if (pKeyBuffer[VK_RBUTTON] & 0xF0)
-				m_pPlayer->Rotate(cyDelta, 0.0f, -cxDelta);
-			else
-				m_pPlayer->Rotate(cyDelta, cxDelta, 0.0f);
-		}
+			{
+				if (pKeyBuffer[VK_RBUTTON] & 0xF0)
+					m_pPlayer->Rotate(cyDelta, 0.0f, -cxDelta);
+				else
+					m_pPlayer->Rotate(cyDelta, cxDelta, 0.0f);
+			}
 		if (dwDirection) m_pPlayer->Move(dwDirection, 50.0f * m_GameTimer.GetTimeElapsed(), true);
-
 	}
 	m_pPlayer->Update(m_GameTimer.GetTimeElapsed());
 }
@@ -601,4 +607,16 @@ void CGameFramework::MoveToNextFrame() {
 		hResult = m_pd3dFence->SetEventOnCompletion(nFenceValue, m_hFenceEvent); 
 		::WaitForSingleObject(m_hFenceEvent, INFINITE); 
 	}
+}
+
+
+void CGameFramework::ProcessSelectedObject()
+{
+	XMFLOAT3 autoaim = Vector3::Subtract(
+		m_pSelectedObject->GetPosition(), m_pPlayer->GetPosition()
+	);
+
+	m_pPlayer->SetLookAt(Vector3::Normalize(autoaim));
+	m_pPlayer->Update(m_GameTimer.GetTimeElapsed());
+
 }

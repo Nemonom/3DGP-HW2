@@ -205,6 +205,7 @@ D3D12_SHADER_BYTECODE CPlayerShader::CreatePixelShader(ID3DBlob **ppd3dShaderBlo
 	return(CShader::CompileShaderFromFile(L"VertexShader.hlsl", "PSDiffused", "ps_5_1",
 		ppd3dShaderBlob));
 }
+
 void CPlayerShader::CreateShader(ID3D12Device *pd3dDevice, ID3D12RootSignature
 	*pd3dGraphicsRootSignature)
 {
@@ -259,13 +260,12 @@ void CObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsComman
 {
 	CCubeMeshDiffused *pWallMesh = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList,
 		100, 100, 1000, 5);
-	pWallMesh->SetOOBB(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(50, 50, 500), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+	pWallMesh->SetOOBB(XMFLOAT3(0.0f, 0.0f, 400.0f), XMFLOAT3(50, 50, 500), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
 	
 	wall = new CGameObject();
 	wall->m_xmOOBB = pWallMesh->m_xmOOBB;
 	wall->SetMesh(pWallMesh);
 	wall->SetPosition(0,0,400);
-
 	wall->Active = true;
 
 
@@ -286,12 +286,15 @@ void CObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsComman
 		my_bullet[z] = pRotatingObject;
 	}
 		
+
+
 	CCubeMeshDiffused *pBossMesh = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList,
-		MY_BULLET_SIZE * 4, MY_BULLET_SIZE * 4, MY_BULLET_SIZE * 4, 1);
+		MY_BULLET_SIZE * 4, MY_BULLET_SIZE * 4, MY_BULLET_SIZE * 4, 5);
 	pBossMesh->SetOOBB(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(MY_BULLET_SIZE * 2, MY_BULLET_SIZE * 2, MY_BULLET_SIZE * 2), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
 
 	boss = new CGameObject();
 
+	pRotatingObject = NULL;
 	pRotatingObject = new CGameObject();
 	pRotatingObject->SetMesh(pBossMesh);
 	pRotatingObject->Active = true;
@@ -300,16 +303,32 @@ void CObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsComman
 	pRotatingObject->SetPosition(0, 0, 400);
 	boss = pRotatingObject;
 
+	/*CCubeMeshDiffused *pDummyMesh = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList,
+		MY_BULLET_SIZE , MY_BULLET_SIZE, MY_BULLET_SIZE * 4, 5);*/
+	pBossMesh->SetOOBB(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(MY_BULLET_SIZE, MY_BULLET_SIZE, MY_BULLET_SIZE), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+
+	playerdummy = new CGameObject();
+
+	pRotatingObject = NULL;
+	pRotatingObject = new CGameObject();
+	pRotatingObject->SetMesh(pBossMesh);
+	pRotatingObject->Active = true;
+	pRotatingObject->SetPosition(0, 0, 0);
+	pRotatingObject->SetRotationSpeed(0);
+	pRotatingObject->SetMovingSpeed(0);
+	playerdummy = pRotatingObject;
+
 
 	CCubeMeshDiffused *pCubeMesh0 = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList,
-		MY_BULLET_SIZE * 2, MY_BULLET_SIZE * 2, MY_BULLET_SIZE * 2, 1);
-	pCubeMesh->SetOOBB(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(MY_BULLET_SIZE, MY_BULLET_SIZE, MY_BULLET_SIZE), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+		MY_BULLET_SIZE, MY_BULLET_SIZE, MY_BULLET_SIZE , 1);
+	pCubeMesh0->SetOOBB(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(MY_BULLET_SIZE, MY_BULLET_SIZE, MY_BULLET_SIZE), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
 	CCubeMeshDiffused *pCubeMesh1 = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList,
-		MY_BULLET_SIZE * 2, MY_BULLET_SIZE * 2, MY_BULLET_SIZE * 2, 2);
-	pCubeMesh->SetOOBB(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(MY_BULLET_SIZE, MY_BULLET_SIZE, MY_BULLET_SIZE), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+		MY_BULLET_SIZE, MY_BULLET_SIZE , MY_BULLET_SIZE, 2);
+	pCubeMesh1->SetOOBB(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(MY_BULLET_SIZE, MY_BULLET_SIZE, MY_BULLET_SIZE), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
 	CCubeMeshDiffused *pCubeMesh2 = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList,
-		MY_BULLET_SIZE * 2, MY_BULLET_SIZE * 2, MY_BULLET_SIZE * 2, 3);
-	pCubeMesh->SetOOBB(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(MY_BULLET_SIZE, MY_BULLET_SIZE, MY_BULLET_SIZE), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+		MY_BULLET_SIZE, MY_BULLET_SIZE, MY_BULLET_SIZE, 3);
+	pCubeMesh2->SetOOBB(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(MY_BULLET_SIZE, MY_BULLET_SIZE, MY_BULLET_SIZE), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+	//pCubeMesh->SetOOBB(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(MY_BULLET_SIZE, MY_BULLET_SIZE, MY_BULLET_SIZE), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
 
 
 	enemy = new CGameObject*[max_enemy];
@@ -329,6 +348,19 @@ void CObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsComman
 		enemy[z] = pEnemyObject;
 	}
 
+	CCubeMeshDiffused *pCubeMesh3 = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList,
+		MY_BULLET_SIZE, MY_BULLET_SIZE, MY_BULLET_SIZE, 4);
+
+	redenemy = new CGameObject*[max_redenemy];
+	CGameObject *predEnemyObject = NULL;
+
+	for (int z = 0; z < max_redenemy; z++)
+	{
+		predEnemyObject = new CGameObject();
+		predEnemyObject->SetMesh(pCubeMesh3);
+		predEnemyObject->Active = false;
+		redenemy[z] = predEnemyObject;
+	}
 
 	CreateShaderVariables(pd3dDevice, pd3dCommandList);
 }
@@ -352,12 +384,23 @@ void CObjectsShader::ReleaseObjects()
 		}
 		delete[] enemy;
 	}
+	if (redenemy)
+	{
+		for (int j = 0; j < max_redenemy; j++)
+		{
+			if (redenemy[j]) delete redenemy[j];
+		}
+		delete[] redenemy;
+	}
 
 	if (wall)
 		delete wall;
 
 	if (boss)
 		delete boss;
+
+	if (playerdummy)
+		delete playerdummy;
 }
 
 void CObjectsShader::AnimateObjects(float fTimeElapsed)
@@ -371,7 +414,7 @@ void CObjectsShader::AnimateObjects(float fTimeElapsed)
 	
 			if (m_timestack == 5)
 			{
-				CreateEnemy();
+				CreateEnemy(1);
 				m_timestack = 0;
 			}
 		}
@@ -392,14 +435,24 @@ void CObjectsShader::AnimateObjects(float fTimeElapsed)
 		if (enemy[j]->m_chase) enemy[j]->SetMovingDirection(Vector3::Normalize(Vector3::Subtract(pPlayer->GetPosition(), enemy[j]->GetPosition())));
 		enemy[j]->Animate(fTimeElapsed);
 	}
-	
-	if (boss) boss->Animate(fTimeElapsed);
+	for (int j = 0; j < max_redenemy; j++)
+	{
+		if (!redenemy[j]->Active) continue;
 
+		if (redenemy[j]->m_chase) redenemy[j]->SetMovingDirection(Vector3::Normalize(Vector3::Subtract(pPlayer->GetPosition(), redenemy[j]->GetPosition())));
+		redenemy[j]->Animate(fTimeElapsed);
+	}
+	if (boss) boss->Animate(fTimeElapsed);
+	if (playerdummy)
+	{
+		playerdummy->SetPosition(pPlayer->GetPosition());
+		playerdummy->Animate(fTimeElapsed);
+	}
 	WallCollision();
 	ObjectsCollision();
 
 	if (boss->Active == false || pPlayer->Active == false)
-		::PostQuitMessage(0);
+		Init();
 }
 
 void CObjectsShader::ReleaseUploadBuffers()
@@ -412,8 +465,13 @@ void CObjectsShader::ReleaseUploadBuffers()
 	{
 		for (int j = 0; j < max_enemy; j++) enemy[j]->ReleaseUploadBuffers();
 	}
+	if (redenemy)
+	{
+		for (int j = 0; j < max_redenemy; j++) redenemy[j]->ReleaseUploadBuffers();
+	}
 	if (wall) wall->ReleaseUploadBuffers();
 	if (boss) boss->ReleaseUploadBuffers();
+	if (playerdummy) playerdummy->ReleaseUploadBuffers();
 }
 
 void CObjectsShader::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera)
@@ -433,9 +491,16 @@ void CObjectsShader::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera 
 			enemy[j]->Render(pd3dCommandList, pCamera);
 		}
 	}
-
+	for (int j = 0; j < max_redenemy; j++)
+	{
+		if (redenemy[j]->Active)
+		{
+			redenemy[j]->Render(pd3dCommandList, pCamera);
+		}
+	}
 	if (wall) wall->Render(pd3dCommandList, pCamera);
 	if (boss) boss->Render(pd3dCommandList, pCamera);
+	//if (playerdummy) playerdummy->Render(pd3dCommandList, pCamera);
 }
 
 void CObjectsShader::CreateBullet()
@@ -459,7 +524,7 @@ void CObjectsShader::CreateEnemy()
 	enemy[enemy_cnt]->SetRotationAxis(XMFLOAT3(rand() % 2, 1.0f, rand() % 2));
 	enemy[enemy_cnt]->SetRotationSpeed(rand() % 10 + 5.f);
 	enemy[enemy_cnt]->SetMovingDirection(XMFLOAT3(rand() % 2 - 1, rand() % 2 - 1, rand() % 2 - 1));
-	enemy[enemy_cnt]->SetMovingSpeed(rand() % 30 + 20.f);
+	enemy[enemy_cnt]->SetMovingSpeed(rand() % 20 + 10.f);
 	enemy[enemy_cnt]->Active = true;
 
 	enemy_cnt++;
@@ -490,6 +555,19 @@ void CObjectsShader::CreateEnemy()
 
 }
 
+void CObjectsShader::CreateEnemy(int i)
+{
+	redenemy[redenemy_cnt]->SetPosition(rand() % 40 - 20, rand() % 40 - 20, pPlayer->GetPosition().z + Vector3::Normalize(pPlayer->GetLookVector()).z * 100);
+	redenemy[redenemy_cnt]->SetRotationAxis(XMFLOAT3(rand() % 2, 1.0f, rand() % 2));
+	redenemy[redenemy_cnt]->SetRotationSpeed(rand() % 10 + 5.f);
+	redenemy[redenemy_cnt]->SetMovingDirection(XMFLOAT3(rand() % 2 - 1, rand() % 2 - 1, rand() % 2 - 1));
+	redenemy[redenemy_cnt]->SetMovingSpeed(rand() % 20 + 10.f);
+	redenemy[redenemy_cnt]->Active = true;
+
+	redenemy_cnt++;
+
+	redenemy_cnt = redenemy_cnt % max_redenemy;
+}
 
 void CObjectsShader::WallCollision()
 {
@@ -514,9 +592,7 @@ void CObjectsShader::WallCollision()
 		switch (containType)
 		{
 		case DISJOINT:
-			//XMVECTOR xmvNormal = XMVectorSet(enemy[i]->GetPosition().x, enemy[i]->GetPosition().y, enemy[i]->GetPosition().x, 1.0f);
-			//XMVECTOR xmvReflect = XMVector3Reflect(XMLoadFloat3(&enemy[i]->m_xmf3MovingDirection), xmvNormal);
-			//XMStoreFloat3(&enemy[i]->m_xmf3MovingDirection, xmvReflect);
+			enemy[i]->m_xmf3MovingDirection = XMFLOAT3(rand() % 2 - 1, rand() % 2 - 1, rand() % 2 - 1);
 			break;
 		}
 	}
@@ -547,6 +623,17 @@ void CObjectsShader::ObjectsCollision()
 				enemy[j]->Active = false;
 			}
 		}
+		for (int j = 0; j < max_redenemy; ++j)
+		{
+			if (redenemy[j]->Active == false) continue;
+
+			if (my_bullet[i]->m_xmOOBB.Intersects(redenemy[j]->m_xmOOBB))
+			{
+				my_bullet[i]->Active = false;
+				redenemy[j]->Active = false;
+				skill++;
+			}
+		}
 
 		if (my_bullet[i]->m_xmOOBB.Intersects(boss->m_xmOOBB))
 		{
@@ -561,9 +648,103 @@ void CObjectsShader::ObjectsCollision()
 	for (int i = 0; i < max_enemy; ++i)
 	{
 		if (enemy[i]->Active == false) continue;
-	
-		if (enemy[i]->m_xmOOBB.Intersects(pPlayer->m_xmOOBB))
+		ContainmentType containType = enemy[i]->m_xmOOBB.Contains(playerdummy->m_xmOOBB);
+
+		if (enemy[i]->m_xmOOBB.Intersects(playerdummy->m_xmOOBB))
 			pPlayer->Active = false;
 	}
 
+	for (int i = 0; i < max_redenemy; ++i)
+	{
+		if (redenemy[i]->Active == false) continue;
+		ContainmentType containType = enemy[i]->m_xmOOBB.Contains(playerdummy->m_xmOOBB);
+
+		if (redenemy[i]->m_xmOOBB.Intersects(playerdummy->m_xmOOBB))
+			pPlayer->Active = false;
+	}
 }
+
+void CObjectsShader::Skill()
+{
+	if (skill > 0)
+	{
+		for (int i = 0; i < enemy_cnt; ++i)
+		{
+			XMFLOAT3 d = Vector3::Subtract(enemy[i]->GetPosition(), pPlayer->GetPosition());
+
+			if (sqrt(d.x*d.x + d.y * d.y + d.z * d.z) < 60)
+			{
+				enemy[i]->Active = false;
+				//CreateEffect(p);
+			}
+		}
+
+		for (int i = 0; i < redenemy_cnt; ++i)
+		{
+			XMFLOAT3 d = Vector3::Subtract(redenemy[i]->GetPosition(), pPlayer->GetPosition());
+
+			if (sqrt(d.x*d.x + d.y * d.y + d.z * d.z) < 60)
+			{
+				redenemy[i]->Active = false;
+				//CreateEffect(p);
+			}
+		}
+		skill--;
+	}
+}
+
+void CObjectsShader::Init()
+{
+	for (int i = 0; i < enemy_cnt; ++i)
+	{
+		enemy[i]->Active = false;
+	}
+	for (int i = 0; i < redenemy_cnt; ++i)
+	{
+		redenemy[i]->Active = false;
+	}
+	pPlayer->SetPosition(XMFLOAT3(0,0,0));
+	skill = 0;
+	m_time = 0;
+	m_timestack = 0;
+	
+	boss->Active = true;
+	pPlayer->Active = true;
+}
+
+CGameObject *CObjectsShader::PickObjectByRayIntersection(XMFLOAT3& xmf3PickPosition,
+	XMFLOAT4X4& xmf4x4View, float *pfNearHitDistance)
+{
+	int nIntersected = 0;
+	*pfNearHitDistance = FLT_MAX;
+	float fHitDistance = FLT_MAX;
+	CGameObject *pSelectedObject = NULL;
+	
+	for (int j = 0; j < max_enemy; j++)
+	{
+		if (enemy[j]->Active == false) continue;
+
+		nIntersected = enemy[j]->PickObjectByRayIntersection(xmf3PickPosition,
+			xmf4x4View, &fHitDistance);
+		if ((nIntersected > 0) && (fHitDistance < *pfNearHitDistance))
+		{
+			*pfNearHitDistance = fHitDistance;
+			pSelectedObject = enemy[j];
+		}
+	}
+	for (int j = 0; j < max_redenemy; j++)
+	{
+		if (redenemy[j]->Active == false) continue;
+
+		nIntersected = redenemy[j]->PickObjectByRayIntersection(xmf3PickPosition,
+			xmf4x4View, &fHitDistance);
+		if ((nIntersected > 0) && (fHitDistance < *pfNearHitDistance))
+		{
+			*pfNearHitDistance = fHitDistance;
+			pSelectedObject = redenemy[j];
+		}
+	}
+
+	return(pSelectedObject);
+}
+

@@ -20,6 +20,8 @@ public:
 	//마지막으로 마우스 버튼을 클릭할 때의 마우스 커서의 위치이다. 
 	POINT m_ptOldCursorPos; 
 
+	CGameObject *m_pSelectedObject = NULL;
+
 private:
 	CGameTimer m_GameTimer;
 	TCHAR m_pszFrameRate[50];
@@ -75,6 +77,9 @@ private:
 	CScene *m_pScene;
 
 public:
+public:
+	void ProcessSelectedObject();
+
 	void MoveToNextFrame();
 
 	void OnResizeBackBuffers();

@@ -44,6 +44,7 @@ public:
 	void AddRef() { m_nReferences++; }
 	void Release() { if (--m_nReferences <= 0) delete this; }
 	void ReleaseUploadBuffers();
+
 protected:
 	ID3D12Resource * m_pd3dVertexBuffer = NULL;
 	ID3D12Resource *m_pd3dVertexUploadBuffer = NULL;
@@ -53,6 +54,11 @@ protected:
 	UINT m_nVertices = 0;
 	UINT m_nStride = 0;
 	UINT m_nOffset = 0;
+
+	//정점을 픽킹을 위하여 저장한다(정점 버퍼를 Map()하여 읽지 않아도 되도록).
+	CDiffusedVertex * m_pVertices = NULL;
+	UINT *m_pnIndices = NULL;
+
 public:
 	virtual void Render(ID3D12GraphicsCommandList *pd3dCommandList);
 
@@ -60,6 +66,9 @@ public:
 
 	void SetOOBB(const XMFLOAT3& xmCenter, const XMFLOAT3& xmExtents, const XMFLOAT4& xmOrientation) 
 	{ m_xmOOBB = BoundingOrientedBox(xmCenter, xmExtents, xmOrientation); }
+
+	int CheckRayIntersection(XMFLOAT3& xmf3RayOrigin, XMFLOAT3& xmf3RayDirection,
+		float *pfNearHitDistance);
 
 protected:
 	ID3D12Resource * m_pd3dIndexBuffer = NULL;

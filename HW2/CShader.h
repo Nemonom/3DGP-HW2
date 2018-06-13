@@ -94,9 +94,15 @@ public:
 	int max_enemy = 30;
 	int enemy_cnt = 0;
 
+	CGameObject **redenemy = NULL;
+	int max_redenemy = 10;
+	int redenemy_cnt = 0;
+
 	CGameObject *wall;
 
 	CGameObject *boss;
+
+	CGameObject *playerdummy;
 
 	float						m_time = 0;
 	int							m_timestack = 0;
@@ -105,9 +111,18 @@ public:
 
 	Fmod_snd snd;
 
+	int skill = 0;
+
 public:
 	void CreateBullet();
 	void CreateEnemy();
+	void CreateEnemy(int i);
 	void WallCollision();
 	void ObjectsCollision();
+	void Skill();
+	void Init();
+
+	//셰이더에 포함되어 있는 모든 게임 객체들에 대한 마우스 픽킹을 수행한다. 
+	virtual CGameObject *PickObjectByRayIntersection(XMFLOAT3& xmf3PickPosition,
+	XMFLOAT4X4& xmf4x4View, float *pfNearHitDistance);
 };

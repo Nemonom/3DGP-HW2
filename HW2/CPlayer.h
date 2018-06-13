@@ -53,6 +53,14 @@ public:
 	CPlayer();
 	virtual ~CPlayer();
 	
+	void SetLookAt(const XMFLOAT3& dir)
+	{
+		m_xmf3Look = dir;
+		m_xmf3Look = Vector3::Normalize(m_xmf3Look);
+		m_xmf3Right = Vector3::Normalize(Vector3::CrossProduct(m_xmf3Up, m_xmf3Look));
+		m_xmf3Up = Vector3::Normalize(Vector3::CrossProduct(m_xmf3Look, m_xmf3Right));
+	}
+
 	XMFLOAT3 GetPosition() { return(m_xmf3Position); }
 	XMFLOAT3 GetLookVector() { return(m_xmf3Look); }
 	XMFLOAT3 GetUpVector() { return(m_xmf3Up); }
