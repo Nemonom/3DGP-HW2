@@ -286,6 +286,20 @@ void CObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsComman
 		my_bullet[z] = pRotatingObject;
 	}
 		
+	CCubeMeshDiffused *pBossMesh = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList,
+		MY_BULLET_SIZE * 4, MY_BULLET_SIZE * 4, MY_BULLET_SIZE * 4, 1);
+	pBossMesh->SetOOBB(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(MY_BULLET_SIZE * 2, MY_BULLET_SIZE * 2, MY_BULLET_SIZE * 2), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+
+	boss = new CGameObject();
+
+	pRotatingObject = new CGameObject();
+	pRotatingObject->SetMesh(pBossMesh);
+	pRotatingObject->Active = true;
+	pRotatingObject->SetRotationAxis(XMFLOAT3(rand() % 2, 1.0f, rand() % 2));
+	pRotatingObject->SetRotationSpeed(rand() % 10 + 5.f);
+	pRotatingObject->SetPosition(0, 0, 400);
+	boss = pRotatingObject;
+
 
 	CCubeMeshDiffused *pCubeMesh0 = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList,
 		MY_BULLET_SIZE * 2, MY_BULLET_SIZE * 2, MY_BULLET_SIZE * 2, 1);
@@ -341,12 +355,15 @@ void CObjectsShader::ReleaseObjects()
 
 	if (wall)
 		delete wall;
+
+	if (boss)
+		delete boss;
 }
 
 void CObjectsShader::AnimateObjects(float fTimeElapsed)
-{	
+{	 
 	m_time += fTimeElapsed;
-	if (m_time > fTimeElapsed * 120)
+	if (m_time > fTimeElapsed * 4000)
 	{
 		if (pPlayer->m_xmf3Position.z < 900)
 		{
@@ -364,16 +381,25 @@ void CObjectsShader::AnimateObjects(float fTimeElapsed)
 	
 	for (int j = 0; j < max_bullet; j++)
 	{
+		if (!my_bullet[j]->Active) continue;
 		my_bullet[j]->Animate(fTimeElapsed);
 	}
+
 	for (int j = 0; j < max_enemy; j++)
 	{
+		if (!enemy[j]->Active) continue;
+
 		if (enemy[j]->m_chase) enemy[j]->SetMovingDirection(Vector3::Normalize(Vector3::Subtract(pPlayer->GetPosition(), enemy[j]->GetPosition())));
 		enemy[j]->Animate(fTimeElapsed);
 	}
 	
+	if (boss) boss->Animate(fTimeElapsed);
+
 	WallCollision();
 	ObjectsCollision();
+
+	if (boss->Active == false || pPlayer->Active == false)
+		::PostQuitMessage(0);
 }
 
 void CObjectsShader::ReleaseUploadBuffers()
@@ -387,6 +413,7 @@ void CObjectsShader::ReleaseUploadBuffers()
 		for (int j = 0; j < max_enemy; j++) enemy[j]->ReleaseUploadBuffers();
 	}
 	if (wall) wall->ReleaseUploadBuffers();
+	if (boss) boss->ReleaseUploadBuffers();
 }
 
 void CObjectsShader::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera)
@@ -394,20 +421,21 @@ void CObjectsShader::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera 
 	CShader::Render(pd3dCommandList, pCamera);
 	for (int j = 0; j < max_bullet; j++)
 	{
-		if (my_bullet[j])
+		if (my_bullet[j]->Active)
 		{
 			my_bullet[j]->Render(pd3dCommandList, pCamera);
 		}
 	}
 	for (int j = 0; j < max_enemy; j++)
 	{
-		if (enemy[j])
+		if (enemy[j]->Active)
 		{
 			enemy[j]->Render(pd3dCommandList, pCamera);
 		}
 	}
 
 	if (wall) wall->Render(pd3dCommandList, pCamera);
+	if (boss) boss->Render(pd3dCommandList, pCamera);
 }
 
 void CObjectsShader::CreateBullet()
@@ -519,16 +547,23 @@ void CObjectsShader::ObjectsCollision()
 				enemy[j]->Active = false;
 			}
 		}
+
+		if (my_bullet[i]->m_xmOOBB.Intersects(boss->m_xmOOBB))
+		{
+			my_bullet[i]->Active = false;
+			boss->Active = false;
+		}
+
 	}
 
 	
 	// 플ㄹ레이ㅓㅇ랑 충돌
-	//for (int i = 0; i < max_enemy; ++i)
-	//{
-	//	if (enemy[i]->Active == false) continue;
-	//
-	//	if (enemy[i]->m_xmOOBB.Intersects(pPlayer->m_xmOOBB))
-	//		pPlayer->Active = false;
-	//}
+	for (int i = 0; i < max_enemy; ++i)
+	{
+		if (enemy[i]->Active == false) continue;
+	
+		if (enemy[i]->m_xmOOBB.Intersects(pPlayer->m_xmOOBB))
+			pPlayer->Active = false;
+	}
 
 }

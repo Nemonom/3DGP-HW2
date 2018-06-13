@@ -95,8 +95,10 @@ public:
 
 	CGameObject *wall;
 
-	float						m_time;
-	int							m_timestack;
+	CGameObject *boss;
+
+	float						m_time = 0;
+	int							m_timestack = 0;
 
 	CPlayer * pPlayer = NULL;
 

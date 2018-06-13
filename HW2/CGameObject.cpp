@@ -43,7 +43,7 @@ void CGameObject::Animate(float fElapsedTime)
 	{
 		if (m_chase == false)
 		{
-			if (m_time < fElapsedTime * 6000)
+			if (m_time < fElapsedTime * 5000)
 			{
 				m_time += fElapsedTime;
 			}
