@@ -3,6 +3,7 @@
 #include <list>
 #include "CGameObject.h"
 #include "CCamera.h"
+#include "Sound.h"
 
 class CPlayer;
 
@@ -101,6 +102,8 @@ public:
 	int							m_timestack = 0;
 
 	CPlayer * pPlayer = NULL;
+
+	Fmod_snd snd;
 
 public:
 	void CreateBullet();

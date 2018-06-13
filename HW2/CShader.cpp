@@ -16,10 +16,10 @@ D3D12_RASTERIZER_DESC CShader::CreateRasterizerState()
 	D3D12_RASTERIZER_DESC d3dRasterizerDesc;
 	::ZeroMemory(&d3dRasterizerDesc, sizeof(D3D12_RASTERIZER_DESC));
 
-	//d3dRasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
-	d3dRasterizerDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	d3dRasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+	//d3dRasterizerDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
 	
-	d3dRasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+	d3dRasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
 	//d3dRasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
 	//d3dRasterizerDesc.CullMode = D3D12_CULL_MODE_FRONT;
 
@@ -258,7 +258,7 @@ void CObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsComman
 	*pd3dCommandList)
 {
 	CCubeMeshDiffused *pWallMesh = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList,
-		100, 100, 1000, 0);
+		100, 100, 1000, 5);
 	pWallMesh->SetOOBB(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(50, 50, 500), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
 	
 	wall = new CGameObject();
@@ -525,7 +525,7 @@ void CObjectsShader::WallCollision()
 
 	if (wall->m_xmOOBB.Contains(XMLoadFloat3(&pPlayer->m_xmf3Position)) == DISJOINT)
 	{
-		//m_snd.Play_effect();
+		snd.Play_effect();
 		pPlayer->SetPosition(Vector3::Subtract(pPlayer->GetPosition(), p));
 	}
 

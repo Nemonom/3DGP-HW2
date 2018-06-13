@@ -157,6 +157,7 @@
     <ClInclude Include="header.h" />
     <ClInclude Include="HW2.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="Sound.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Timer.h" />
@@ -170,6 +171,7 @@
     <ClCompile Include="CScene.cpp" />
     <ClCompile Include="CShader.cpp" />
     <ClCompile Include="HW2.cpp" />
+    <ClCompile Include="Sound.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="Timer.cpp" />
   </ItemGroup>

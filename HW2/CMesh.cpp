@@ -73,19 +73,8 @@ CCubeMeshDiffused::CCubeMeshDiffused(ID3D12Device *pd3dDevice, ID3D12GraphicsCom
 	
 	//정점 버퍼는 직육면체의 꼭지점 8개에 대한 정점 데이터를 가진다. 
 	CDiffusedVertex pVertices[8];
-	if (i == 0)
-	{
-		pVertices[0] = CDiffusedVertex(XMFLOAT3(-fx, +fy, -fz), RANDOM_COLOR);
-		pVertices[1] = CDiffusedVertex(XMFLOAT3(+fx, +fy, -fz), RANDOM_COLOR);
-		pVertices[2] = CDiffusedVertex(XMFLOAT3(+fx, +fy, +fz), RANDOM_COLOR);
-		pVertices[3] = CDiffusedVertex(XMFLOAT3(-fx, +fy, +fz), RANDOM_COLOR);
-		pVertices[4] = CDiffusedVertex(XMFLOAT3(-fx, -fy, -fz), RANDOM_COLOR);
-		pVertices[5] = CDiffusedVertex(XMFLOAT3(+fx, -fy, -fz), RANDOM_COLOR);
-		pVertices[6] = CDiffusedVertex(XMFLOAT3(+fx, -fy, +fz), RANDOM_COLOR);
-		pVertices[7] = CDiffusedVertex(XMFLOAT3(-fx, -fy, +fz), RANDOM_COLOR);
 
-	}
-	else if (i == 1)
+	if (i == 1)
 	{
 		pVertices[0] = CDiffusedVertex(XMFLOAT3(-fx, +fy, -fz), XMFLOAT4(1,0,0, 0));
 		pVertices[1] = CDiffusedVertex(XMFLOAT3(+fx, +fy, -fz), XMFLOAT4(1,0,0, 0));
@@ -118,7 +107,18 @@ CCubeMeshDiffused::CCubeMeshDiffused(ID3D12Device *pd3dDevice, ID3D12GraphicsCom
 		pVertices[6] = CDiffusedVertex(XMFLOAT3(+fx, -fy, +fz), XMFLOAT4(1, 0, 1, 0));
 		pVertices[7] = CDiffusedVertex(XMFLOAT3(-fx, -fy, +fz), XMFLOAT4(1, 0, 1, 0));
 	}
+	else
+	{
+		pVertices[0] = CDiffusedVertex(XMFLOAT3(-fx, +fy, -fz), RANDOM_COLOR);
+		pVertices[1] = CDiffusedVertex(XMFLOAT3(+fx, +fy, -fz), RANDOM_COLOR);
+		pVertices[2] = CDiffusedVertex(XMFLOAT3(+fx, +fy, +fz), RANDOM_COLOR);
+		pVertices[3] = CDiffusedVertex(XMFLOAT3(-fx, +fy, +fz), RANDOM_COLOR);
+		pVertices[4] = CDiffusedVertex(XMFLOAT3(-fx, -fy, -fz), RANDOM_COLOR);
+		pVertices[5] = CDiffusedVertex(XMFLOAT3(+fx, -fy, -fz), RANDOM_COLOR);
+		pVertices[6] = CDiffusedVertex(XMFLOAT3(+fx, -fy, +fz), RANDOM_COLOR);
+		pVertices[7] = CDiffusedVertex(XMFLOAT3(-fx, -fy, +fz), RANDOM_COLOR);
 
+	}
 
 
 	m_pd3dVertexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, pVertices,
@@ -133,30 +133,60 @@ CCubeMeshDiffused::CCubeMeshDiffused(ID3D12Device *pd3dDevice, ID3D12GraphicsCom
 	
 	m_nIndices = 36;
 	UINT pnIndices[36];
-	//ⓐ 앞면(Front) 사각형의 위쪽 삼각형
-	pnIndices[0] = 3; pnIndices[1] = 1; pnIndices[2] = 0;
-	//ⓑ 앞면(Front) 사각형의 아래쪽 삼각형
-	pnIndices[3] = 2; pnIndices[4] = 1; pnIndices[5] = 3;
-	//ⓒ 윗면(Top) 사각형의 위쪽 삼각형
-	pnIndices[6] = 0; pnIndices[7] = 5; pnIndices[8] = 4;
-	//ⓓ 윗면(Top) 사각형의 아래쪽 삼각형
-	pnIndices[9] = 1; pnIndices[10] = 5; pnIndices[11] = 0;
-	//ⓔ 뒷면(Back) 사각형의 위쪽 삼각형
-	pnIndices[12] = 3; pnIndices[13] = 4; pnIndices[14] = 7;
-	//ⓕ 뒷면(Back) 사각형의 아래쪽 삼각형
-	pnIndices[15] = 0; pnIndices[16] = 4; pnIndices[17] = 3;
-	//ⓖ 아래면(Bottom) 사각형의 위쪽 삼각형
-	pnIndices[18] = 1; pnIndices[19] = 6; pnIndices[20] = 5;
-	//ⓗ 아래면(Bottom) 사각형의 아래쪽 삼각형
-	pnIndices[21] = 2; pnIndices[22] = 6; pnIndices[23] = 1;
-	//ⓘ 옆면(Left) 사각형의 위쪽 삼각형
-	pnIndices[24] = 2; pnIndices[25] = 7; pnIndices[26] = 6;
-	//ⓙ 옆면(Left) 사각형의 아래쪽 삼각형
-	pnIndices[27] = 3; pnIndices[28] = 7; pnIndices[29] = 2;
-	//ⓚ 옆면(Right) 사각형의 위쪽 삼각형
-	pnIndices[30] = 6; pnIndices[31] = 4; pnIndices[32] = 5;
-	//ⓛ 옆면(Right) 사각형의 아래쪽 삼각형
-	pnIndices[33] = 7; pnIndices[34] = 4; pnIndices[35] = 6;
+	if (i == 5)
+	{
+		//ⓐ 앞면(Front) 사각형의 위쪽 삼각형
+		pnIndices[0] = 0; pnIndices[1] = 1; pnIndices[2] = 3;
+		//ⓑ 앞면(Front) 사각형의 아래쪽 삼각형
+		pnIndices[3] = 3; pnIndices[4] = 1; pnIndices[5] = 2;
+		//ⓒ 윗면(Top) 사각형의 위쪽 삼각형
+		pnIndices[6] = 4; pnIndices[7] = 5; pnIndices[8] = 0;
+		//ⓓ 윗면(Top) 사각형의 아래쪽 삼각형
+		pnIndices[9] = 0; pnIndices[10] = 5; pnIndices[11] = 1;
+		//ⓔ 뒷면(Back) 사각형의 위쪽 삼각형
+		pnIndices[12] = 7; pnIndices[13] = 4; pnIndices[14] = 3;
+		//ⓕ 뒷면(Back) 사각형의 아래쪽 삼각형
+		pnIndices[15] = 3; pnIndices[16] = 4; pnIndices[17] = 0;
+		//ⓖ 아래면(Bottom) 사각형의 위쪽 삼각형
+		pnIndices[18] = 5; pnIndices[19] = 6; pnIndices[20] = 1;
+		//ⓗ 아래면(Bottom) 사각형의 아래쪽 삼각형
+		pnIndices[21] = 1; pnIndices[22] = 6; pnIndices[23] = 2;
+		//ⓘ 옆면(Left) 사각형의 위쪽 삼각형
+		pnIndices[24] = 6; pnIndices[25] = 7; pnIndices[26] = 2;
+		//ⓙ 옆면(Left) 사각형의 아래쪽 삼각형
+		pnIndices[27] = 2; pnIndices[28] = 7; pnIndices[29] = 3;
+		//ⓚ 옆면(Right) 사각형의 위쪽 삼각형
+		pnIndices[30] = 5; pnIndices[31] = 4; pnIndices[32] = 6;
+		//ⓛ 옆면(Right) 사각형의 아래쪽 삼각형
+		pnIndices[33] = 6; pnIndices[34] = 4; pnIndices[35] = 7;
+	}
+	else
+	{
+		//ⓐ 앞면(Front) 사각형의 위쪽 삼각형
+		pnIndices[0] = 3; pnIndices[1] = 1; pnIndices[2] = 0;
+		//ⓑ 앞면(Front) 사각형의 아래쪽 삼각형
+		pnIndices[3] = 2; pnIndices[4] = 1; pnIndices[5] = 3;
+		//ⓒ 윗면(Top) 사각형의 위쪽 삼각형
+		pnIndices[6] = 0; pnIndices[7] = 5; pnIndices[8] = 4;
+		//ⓓ 윗면(Top) 사각형의 아래쪽 삼각형
+		pnIndices[9] = 1; pnIndices[10] = 5; pnIndices[11] = 0;
+		//ⓔ 뒷면(Back) 사각형의 위쪽 삼각형
+		pnIndices[12] = 3; pnIndices[13] = 4; pnIndices[14] = 7;
+		//ⓕ 뒷면(Back) 사각형의 아래쪽 삼각형
+		pnIndices[15] = 0; pnIndices[16] = 4; pnIndices[17] = 3;
+		//ⓖ 아래면(Bottom) 사각형의 위쪽 삼각형
+		pnIndices[18] = 1; pnIndices[19] = 6; pnIndices[20] = 5;
+		//ⓗ 아래면(Bottom) 사각형의 아래쪽 삼각형
+		pnIndices[21] = 2; pnIndices[22] = 6; pnIndices[23] = 1;
+		//ⓘ 옆면(Left) 사각형의 위쪽 삼각형
+		pnIndices[24] = 2; pnIndices[25] = 7; pnIndices[26] = 6;
+		//ⓙ 옆면(Left) 사각형의 아래쪽 삼각형
+		pnIndices[27] = 3; pnIndices[28] = 7; pnIndices[29] = 2;
+		//ⓚ 옆면(Right) 사각형의 위쪽 삼각형
+		pnIndices[30] = 6; pnIndices[31] = 4; pnIndices[32] = 5;
+		//ⓛ 옆면(Right) 사각형의 아래쪽 삼각형
+		pnIndices[33] = 7; pnIndices[34] = 4; pnIndices[35] = 6;
+	}
 	//인덱스 버퍼를 생성한다.
 	m_pd3dIndexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, pnIndices,
 	sizeof(UINT) * m_nIndices, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_INDEX_BUFFER,
