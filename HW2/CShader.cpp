@@ -286,6 +286,17 @@ void CObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsComman
 		my_bullet[z] = pRotatingObject;
 	}
 		
+	e_bullet = new CGameObject*[max_ebullet];
+
+	for (int z = 0; z < max_ebullet; z++)
+	{
+		pRotatingObject = new CGameObject();
+		pRotatingObject->SetMesh(pCubeMesh);
+		//각 정육면체 객체의 위치를 설정한다.
+		pRotatingObject->Active = false;
+		e_bullet[z] = pRotatingObject;
+	}
+
 
 
 	CCubeMeshDiffused *pBossMesh = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList,
@@ -299,7 +310,7 @@ void CObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsComman
 	pRotatingObject->SetMesh(pBossMesh);
 	pRotatingObject->Active = true;
 	pRotatingObject->SetRotationAxis(XMFLOAT3(rand() % 2, 1.0f, rand() % 2));
-	pRotatingObject->SetRotationSpeed(rand() % 10 + 5.f);
+	pRotatingObject->SetRotationSpeed(rand() % 10 + 20.f);
 	pRotatingObject->SetPosition(0, 0, 400);
 	boss = pRotatingObject;
 
@@ -376,6 +387,14 @@ void CObjectsShader::ReleaseObjects()
 		}
 		delete[] my_bullet;
 	}
+	if (e_bullet)
+	{
+		for (int j = 0; j < max_ebullet; j++)
+		{
+			if (e_bullet[j]) delete e_bullet[j];
+		}
+		delete[] e_bullet;
+	}
 	if (enemy)
 	{
 		for (int j = 0; j < max_enemy; j++)
@@ -422,12 +441,25 @@ void CObjectsShader::AnimateObjects(float fTimeElapsed)
 		m_timestack++;
 	}
 	
+
+	e_bullettime += fTimeElapsed;
+	if (e_bullettime > fTimeElapsed * 1000)
+	{
+		CreateEBullet();
+		e_bullettime = 0;
+	}
+
+
 	for (int j = 0; j < max_bullet; j++)
 	{
 		if (!my_bullet[j]->Active) continue;
 		my_bullet[j]->Animate(fTimeElapsed);
 	}
-
+	for (int j = 0; j < max_ebullet; j++)
+	{
+		if (!e_bullet[j]->Active) continue;
+		e_bullet[j]->Animate(fTimeElapsed);
+	}
 	for (int j = 0; j < max_enemy; j++)
 	{
 		if (!enemy[j]->Active) continue;
@@ -461,6 +493,10 @@ void CObjectsShader::ReleaseUploadBuffers()
 	{
 		for (int j = 0; j < max_bullet; j++) my_bullet[j]->ReleaseUploadBuffers();
 	}
+	if (e_bullet)
+	{
+		for (int j = 0; j < max_ebullet; j++) e_bullet[j]->ReleaseUploadBuffers();
+	}
 	if (enemy)
 	{
 		for (int j = 0; j < max_enemy; j++) enemy[j]->ReleaseUploadBuffers();
@@ -482,6 +518,13 @@ void CObjectsShader::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera 
 		if (my_bullet[j]->Active)
 		{
 			my_bullet[j]->Render(pd3dCommandList, pCamera);
+		}
+	}
+	for (int j = 0; j < max_ebullet; j++)
+	{
+		if (e_bullet[j]->Active)
+		{
+			e_bullet[j]->Render(pd3dCommandList, pCamera);
 		}
 	}
 	for (int j = 0; j < max_enemy; j++)
@@ -507,7 +550,7 @@ void CObjectsShader::CreateBullet()
 {	
 	//각 정육면체 객체의 위치를 설정한다.
 	my_bullet[bullet_cnt]->SetPosition(pPlayer->GetPosition());
-	my_bullet[bullet_cnt]->SetRotationAxis(XMFLOAT3(0.0f, 1.0f, 0.0f));
+	my_bullet[bullet_cnt]->SetRotationAxis(XMFLOAT3(0.0f, 1.0f, 1.0f));
 	my_bullet[bullet_cnt]->SetRotationSpeed(15.f + 3.0f);
 	my_bullet[bullet_cnt]->SetMovingDirection(pPlayer->GetLookVector());
 	my_bullet[bullet_cnt]->SetMovingSpeed(100);
@@ -517,6 +560,22 @@ void CObjectsShader::CreateBullet()
 
 	bullet_cnt = bullet_cnt % max_bullet;
 }
+
+void CObjectsShader::CreateEBullet()
+{
+	//각 정육면체 객체의 위치를 설정한다.
+	e_bullet[ebullet_cnt]->SetPosition(boss->GetPosition());
+	e_bullet[ebullet_cnt]->SetRotationAxis(XMFLOAT3(0.0f, 1.0f, 1.0f));
+	e_bullet[ebullet_cnt]->SetRotationSpeed(15.f + 3.0f);
+	e_bullet[ebullet_cnt]->SetMovingDirection(Vector3::Normalize(Vector3::Subtract(pPlayer->GetPosition(), boss->GetPosition())));
+	e_bullet[ebullet_cnt]->SetMovingSpeed(100);
+	e_bullet[ebullet_cnt]->Active = true;
+
+	ebullet_cnt++;
+
+	ebullet_cnt = ebullet_cnt % max_ebullet;
+}
+
 
 void CObjectsShader::CreateEnemy()
 {
@@ -580,6 +639,18 @@ void CObjectsShader::WallCollision()
 		{
 		case DISJOINT:
 			my_bullet[i]->Active = false;
+			break;
+		}
+	}
+	for (int i = 0; i < max_ebullet; ++i)
+	{
+		if (e_bullet[i]->Active == false) continue;
+
+		ContainmentType containType = wall->m_xmOOBB.Contains(e_bullet[i]->m_xmOOBB);
+		switch (containType)
+		{
+		case DISJOINT:
+			e_bullet[i]->Active = false;
 			break;
 		}
 	}
@@ -648,8 +719,7 @@ void CObjectsShader::ObjectsCollision()
 	for (int i = 0; i < max_enemy; ++i)
 	{
 		if (enemy[i]->Active == false) continue;
-		ContainmentType containType = enemy[i]->m_xmOOBB.Contains(playerdummy->m_xmOOBB);
-
+		
 		if (enemy[i]->m_xmOOBB.Intersects(playerdummy->m_xmOOBB))
 			pPlayer->Active = false;
 	}
@@ -657,9 +727,16 @@ void CObjectsShader::ObjectsCollision()
 	for (int i = 0; i < max_redenemy; ++i)
 	{
 		if (redenemy[i]->Active == false) continue;
-		ContainmentType containType = enemy[i]->m_xmOOBB.Contains(playerdummy->m_xmOOBB);
-
+		
 		if (redenemy[i]->m_xmOOBB.Intersects(playerdummy->m_xmOOBB))
+			pPlayer->Active = false;
+	}
+
+	for (int i = 0; i < ebullet_cnt; ++i)
+	{
+		if (e_bullet[i]->Active == false) continue;
+
+		if (e_bullet[i]->m_xmOOBB.Intersects(playerdummy->m_xmOOBB))
 			pPlayer->Active = false;
 	}
 }
@@ -695,6 +772,14 @@ void CObjectsShader::Skill()
 
 void CObjectsShader::Init()
 {
+	for (int j = 0; j < max_bullet; j++)
+	{
+		my_bullet[j]->Active = false;
+	}
+	for (int j = 0; j < max_ebullet; j++)
+	{
+		e_bullet[j]->Active = false;
+	}
 	for (int i = 0; i < enemy_cnt; ++i)
 	{
 		enemy[i]->Active = false;

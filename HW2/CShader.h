@@ -98,6 +98,10 @@ public:
 	int max_redenemy = 10;
 	int redenemy_cnt = 0;
 
+	CGameObject **e_bullet = NULL;
+	int max_ebullet = 20;
+	int ebullet_cnt = 0;
+
 	CGameObject *wall;
 
 	CGameObject *boss;
@@ -106,6 +110,7 @@ public:
 
 	float						m_time = 0;
 	int							m_timestack = 0;
+	float						e_bullettime = 0;
 
 	CPlayer * pPlayer = NULL;
 
@@ -115,6 +120,7 @@ public:
 
 public:
 	void CreateBullet();
+	void CreateEBullet();
 	void CreateEnemy();
 	void CreateEnemy(int i);
 	void WallCollision();
